@@ -1,0 +1,46 @@
+{
+  "name": "es6transform",
+  "description": "Translate an es6/harmony AST into a simplified es3-compatible AST",
+  "version": "0.0.0",
+  "homepage": "https://github.com/tarruda/es6transform",
+  "author": {
+    "name": "Thiago de Arruda",
+    "email": "tpadilha84@gmail.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/tarruda/es6transform.git"
+  },
+  "bugs": {
+    "url": "https://github.com/tarruda/es6transform/issues"
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/tarruda/es6transform/blob/master/LICENSE-MIT"
+    }
+  ],
+  "keywords": [
+    "transpiler",
+    "es6",
+    "esnext",
+    "harmony"
+  ],
+  "main": "./src/index",
+  "devDependencies": {
+    "grunt": "~0.4.1",
+    "grunt-contrib-watch": "~0.5.3",
+    "grunt-mocha-debug": "~0.0.6",
+    "chai": "~1.7.2",
+    "grunt-contrib-jshint": "~0.6.4",
+    "grunt-release": "~0.5.1"
+  },
+  "engines": {
+    "node": ">= 0.8.0"
+  },
+  "dependencies": {
+    "esprima": "git://github.com/ariya/esprima#harmony",
+    "ast-traverse": "~0.1.0",
+    "escodegen": "0.0.27"
+  }
+}
