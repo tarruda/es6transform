@@ -1,3 +1,4 @@
+/* jshint evil: true */
 var fs = require('fs');
 var path = require('path');
 var transform = require('../src').transform;

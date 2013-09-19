@@ -1,8 +1,4 @@
 {
-  "globals": {
-    "expect": false,
-    "run": false
-  },
   "curly": false,
   "eqeqeq": true,
   "immed": true,
@@ -15,8 +11,5 @@
   "eqnull": true,
   "node": true,
   "browser": true,
-  "expr": true,
-  "debug": true,
-  "esnext": true,
-  "evil": true
+  "debug": true
 }

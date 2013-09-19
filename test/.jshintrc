@@ -1,0 +1,9 @@
+{
+  "undef": false,
+  "expr": true,
+  "esnext": true,
+  "globals": {
+    "expect": false,
+    "run": false
+  }
+}
