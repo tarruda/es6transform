@@ -7,7 +7,8 @@ global.expect = require('chai').expect;
 
 
 var fixtures = [
-  'arrow_functions.js'
+  'arrow_functions.js',
+  'destructure.js'
 ];
 
 

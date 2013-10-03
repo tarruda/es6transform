@@ -19,7 +19,6 @@ var obj = {
   }
 };
 
-
 run({
   'Arrow functions': {
     'expression': () => expect(factorial(5)).to.eql(120),

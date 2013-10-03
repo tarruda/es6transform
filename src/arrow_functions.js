@@ -1,21 +1,20 @@
-var estraverse = require('estraverse');
+var traverse = require('ast-traverse');
 
 
 function thisMaterialized(arrowFunc) {
   var rv = false;
 
-  estraverse.traverse(arrowFunc, {
-    enter: function(node) {
+  traverse(arrowFunc, {
+    pre: function(node) {
       if (node.type === 'FunctionExpression' ||
           node.type === 'FunctionDeclaration') {
         // normal function introduces a new dynamic 'this' scope, no need
         // to descend
-        return estraverse.VisitorOption.SKIP;
+        return false;
       } 
 
       if (node.type === 'ThisExpression') {
         rv = true;
-        return estraverse.VisitorOption.BREAK;
       }
     }
   });
@@ -24,23 +23,12 @@ function thisMaterialized(arrowFunc) {
 }
 
 
-exports.enter = function(node) {
-  var rv = {
-    type: 'FunctionExpression',
-    id: node.id,
-    params: node.params,
-    defaults: node.defaults,
-    rest: node.rest,
-    body: node.body,
-    generator: node.generator,
-    expression: false
-  };
-
-  if (thisMaterialized(node)) {
+exports.pre = function(node) {
+  if (thisMaterialized(node.body)) {
     var parent = this.currentScope();
     // Find the closest non-arrow function parent scope
-    while (parent.block.type === 'ArrowFunctionExpression') {
-      parent = parent.upper;
+    while (parent.type === 'ArrowFunctionExpression') {
+      parent = this.currentScope(parent);
     }
     // ensure its context is bound to the '_this' variable and
     // save a reference to it in the node so all children of type
@@ -49,17 +37,21 @@ exports.enter = function(node) {
       type: 'ThisExpression'
     });
   }
+};
 
-  if (rv.body.type !== 'BlockStatement') {
+
+exports.post = function(node) {
+  node.type = 'FunctionExpression';
+  node.expression = false;
+
+  if (node.body.type !== 'BlockStatement') {
     // expression, wrap into a body/return statement
-    rv.body = {
+    node.body = {
       type: 'BlockStatement',
       body: [{
         type: 'ReturnStatement',
-        argument: rv.body
+        argument: node.body
       }]
     };
   }
-  return rv;
 };
-

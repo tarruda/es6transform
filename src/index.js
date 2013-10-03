@@ -2,27 +2,39 @@ var _ = require('lodash');
 var klass = require('klass');
 var esprima = require('esprima');
 var escodegen = require('escodegen');
-var escope = require('escope');
-var replace = require('estraverse').replace;
+var traverse = require('ast-traverse');
 
+
+function collectIdentifiers(ast) {
+  var rv = {};
+
+  traverse(ast, {
+    pre: function(node) {
+      if (node.type === 'Identifier')
+        rv[node.name] = true;
+    }
+  });
+
+  return rv;
+}
 
 var transformations = {
   // Transform ArrowFunctionExpression nodes into FunctionExpression nodes
   ArrowFunctionExpression: require('./arrow_functions'),
   ThisExpression: require('./this'),
+  AssignmentExpression: require('./assignment')
 };
 
 var WalkContext = klass({
   initialize: function(ast, options) {
     this.options = options;
-    this.scope = escope.analyze(ast);
-    this.scope.attach();
     this.path = [];
+    this.identifiers = collectIdentifiers(ast);
     this.arrowThis = this.unused('_this');
     this.forOfIndex = this.unused('_i');
     this.forOfLength = this.unused('_l');
     this.forOfTemp = this.unused('_a');
-    this.destructureTemp = this.unused('_tmp');
+    this.tmp = this.unused('_tmp');
   },
   // Finds an identifier name derived from the requested that is not used
   // in the program code for safely usage when translating ast nodes
@@ -30,34 +42,31 @@ var WalkContext = klass({
     var name = requested;
     var idx = 2;
 
-    for (var i = 0, l = this.scope.scopes.length; i < l; i++) {
-      var s = this.scope.scopes[i];
-      while (s.isUsedName(name)) {
-        name = requested + idx++;
-      }
+    while (this.identifiers[name]) {
+      name = requested + idx++;
     }
 
     return name;
   },
   // Find the closest parent that belongs to one of the types
-  closest: function(types) {
+  closest: function(types, start) {
     return _.findLast(this.path, function(p) { 
-      return _.contains(types, p.type);
+      return start !== p && _.contains(types, p.type);
     });
   },
-  currentScope: function() {
-    return this.scope.acquire(this.closest([
+  currentScope: function(start) {
+    return this.closest([
       'Program',
       'FunctionExpression',
       'FunctionStatement',
       'ArrowFunctionExpression'
-    ]));
+    ], start);
   },
   ensureVar: function(name, scope, init) {
     var body = 
-      scope.type === 'global' ?
-      scope.block.body :
-      scope.block.body.body;
+      scope.type === 'Program' ?
+      scope.body :
+      scope.body.body;
 
     scope.declared = scope.declared || {};
 
@@ -103,9 +112,7 @@ var WalkContext = klass({
     return this.ensureVar(idName, scope);
   },
   // Free a temporary variable for reuse
-  freeVar: function (name) {
-    var scope = this.currentScope();
-
+  freeVar: function (name, scope) {
     if (scope.used)
       delete scope.used[name];
   }
@@ -115,20 +122,20 @@ var WalkContext = klass({
 
 function transformAst(ast, options) {
   var context = new WalkContext(ast, options);
-  return replace(ast, {
-    enter: function(node) {
+  traverse(ast, {
+    pre: function(node) {
       var rv;
-      if (node.type in transformations && transformations[node.type].enter) {
-        rv = transformations[node.type].enter.apply(context, arguments);
+      if (node.type in transformations && transformations[node.type].pre) {
+        rv = transformations[node.type].pre.apply(context, arguments);
       }
       context.path.push(node);
       return rv;
     },
-    leave: function(node) {
+    post: function(node) {
       var rv;
       context.path.pop();
-      if (node.type in transformations && transformations[node.type].leave) {
-        rv = transformations[node.type].leave.apply(context, arguments);
+      if (node.type in transformations && transformations[node.type].post) {
+        rv = transformations[node.type].post.apply(context, arguments);
       }
       return rv;
     }
@@ -140,7 +147,7 @@ function transform(source) {
   var ast = esprima.parse(source, {
     loc: true, range: true, comment: true, tokens: true
   });
-  ast = transformAst(ast);
+  transformAst(ast);
   return escodegen.generate(ast, {indent: '  '});
 }
 
