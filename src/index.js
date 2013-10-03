@@ -22,7 +22,8 @@ var transformations = {
   // Transform ArrowFunctionExpression nodes into FunctionExpression nodes
   ArrowFunctionExpression: require('./arrow_functions'),
   ThisExpression: require('./this'),
-  AssignmentExpression: require('./assignment')
+  AssignmentExpression: require('./assignment'),
+  VariableDeclaration: require('./declaration')
 };
 
 var WalkContext = klass({

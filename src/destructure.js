@@ -50,8 +50,9 @@ function assign(to, from, operator, scope, sequence) {
   }
 
   if (to.type === 'ObjectExpression' || to.type === 'ObjectPattern') {
-    for (i = 0, l = to.properties.length; i < l; i++) {
-      var prop = to.properties[i];
+    var props = to.properties;
+    for (i = 0, l = props.length; i < l; i++) {
+      var prop = props[i];
       from = {
         type: 'MemberExpression',
         object: tmp,
