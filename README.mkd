@@ -1,24 +1,15 @@
-Package: html2text
-Status: install ok half-configured
-Priority: optional
-Section: web
-Installed-Size: 292
-Maintainer: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>
-Architecture: i386
-Version: 1.3.2a-15
-Depends: libc6 (>= 2.4), libgcc1 (>= 1:4.1.1), libstdc++6 (>= 4.4.0)
-Suggests: curl | wget
-Description: advanced HTML to text converter
- html2text is a converter from HTML to plain text.
- .
- html2text reads HTML documents supplied in the command line (or from standard
- input), converts each of them into a stream of plain text characters and
- writes output to the file or the terminal.
- .
- Debian version also can recognize encoding of documents, do on-fly
- input and output recoding.
- .
- html2text was written because the author wasn't happy with the
- output of "lynx -dump" and so he wrote something better.
-Original-Maintainer: Eugene V. Lyubimkin <jackyf@debian.org>
-Homepage: http://www.mbayer.de/html2text/
+# es6transform
+
+> Library that transforms es6 into es3
+
+## Installation
+
+```shell
+npm install es6transform
+```
+
+## Usage
+
+```js
+var es6transform = require('es6transform');
+```

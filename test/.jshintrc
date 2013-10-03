@@ -2,6 +2,7 @@
   "undef": false,
   "expr": true,
   "esnext": true,
+  "debug": true,
   "globals": {
     "expect": false,
     "run": false
