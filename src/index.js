@@ -1,9 +1,38 @@
 var _ = require('lodash');
-var klass = require('klass');
+var has = require('has');
+var classic = require('classic');
 var esprima = require('esprima');
 var escodegen = require('escodegen');
 var traverse = require('ast-traverse');
 
+
+var unsupported = [
+  'ArrayPattern',
+  'ClassBody',
+  'ClassDeclaration',
+  'ClassExpression',
+  'ClassHeritage',
+  'ExportDeclaration',
+  'ExportBatchSpecifier',
+  'ExportSpecifier',
+  'ForOfStatement',
+  'ImportDeclaration',
+  'ImportSpecifier',
+  'MethodDefinition',
+  'ModuleDeclaration',
+  'ObjectPattern',
+  'SpreadElement',
+  'TaggedTemplateExpression',
+  'TemplateElement',
+  'TemplateLiteral',
+  'YieldExpression'
+];
+
+(function() {
+  _.each(unsupported, (item) => {
+    unsupported[item] = true;
+  });
+})();
 
 function collectIdentifiers(ast) {
   var rv = {};
@@ -26,8 +55,8 @@ var transformations = {
   VariableDeclaration: require('./declaration')
 };
 
-var WalkContext = klass({
-  initialize: function(ast, options) {
+var WalkContext = classic({
+  constructor: function(ast, options) {
     this.options = options;
     this.path = [];
     this.identifiers = collectIdentifiers(ast);
@@ -117,7 +146,6 @@ var WalkContext = klass({
     if (scope.used)
       delete scope.used[name];
   }
-
 });
 
 
@@ -126,6 +154,11 @@ function transformAst(ast, options) {
   traverse(ast, {
     pre: function(node) {
       var rv;
+
+      if (has(unsupported, node.type)) {
+        throw new SyntaxError(node.type + ' nodes are not supported');
+      }
+
       if (node.type in transformations && transformations[node.type].pre) {
         rv = transformations[node.type].pre.apply(context, arguments);
       }
@@ -145,9 +178,7 @@ function transformAst(ast, options) {
 
 
 function transform(source) {
-  var ast = esprima.parse(source, {
-    loc: true, range: true, comment: true, tokens: true
-  });
+  var ast = esprima.parse(source, {loc: true});
   transformAst(ast);
   return escodegen.generate(ast, {indent: '  '});
 }

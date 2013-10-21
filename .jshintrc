@@ -11,5 +11,6 @@
   "eqnull": true,
   "node": true,
   "browser": true,
+  "esnext": true,
   "debug": true
 }

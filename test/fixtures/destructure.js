@@ -4,7 +4,6 @@ var a, b, c;
 
 var [d, e, f] = [4, 5, 6];
 
-var j, k, l;
 var {g, h, i} = {g: 7, h: 8, i: 9};
 
 
